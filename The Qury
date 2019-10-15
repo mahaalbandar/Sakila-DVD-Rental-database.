@@ -1,0 +1,208 @@
+
+Question 1
+
+
+
+
+
+
+
+
+
+
+
+
+ /*Query 1/*
+
+
+
+
+WITH title_category AS(
+
+                SELECT f.film_id, f.title AS film_title, cat.name AS category_name
+
+                 FROM film f
+
+                 JOIN film_category fc
+
+                 ON f.film_id = fc.film_id
+
+                 JOIN category cat
+
+                 ON cat.category_id = fc.category_id
+
+                 ORDER BY 2,3) ,
+
+
+
+
+rent_count AS (
+
+                SELECT f.film_id, COUNT(*) AS rental_count
+
+                FROM film f
+
+                JOIN inventory inv
+
+                ON inv.film_id = f.film_id
+
+                JOIN rental r
+
+                ON inv.inventory_id = r.inventory_id
+
+                GROUP BY 1)
+
+
+
+
+SELECT film_title , category_name , rental_count
+
+FROM title_category tc
+
+JOIN rent_count rc
+
+ON tc.film_id = rc.film_id
+
+ORDER BY 2,1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*Query 2/*
+
+
+
+
+SELECT film.title , cat.name ,film.rental_duration,
+
+       NTILE(4) OVER (ORDER BY film.rental_duration)  AS standard_quartile
+
+FROM film
+
+JOIN film_category fc
+
+ON film.film_id = fc.film_id
+
+JOIN category cat
+
+ON cat.category_id = fc.category_id
+
+WHERE cat.name IN ('Animation', 'Children', 'Classics', 'Comedy', 'Family', 'Music')
+
+ORDER BY 3
+
+
+
+
+
+
+
+Question 3
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*Query 3/*
+
+
+
+
+WITH film_quartile AS ( 
+
+	SELECT film.title , cat.name ,film.rental_duration,
+
+        NTILE(4) OVER (ORDER BY film.rental_duration) AS standard_quartile
+
+	FROM film
+
+	JOIN film_category fc
+
+	ON film.film_id = fc.film_id
+
+	JOIN category cat
+
+	ON cat.category_id = fc.category_id
+
+	WHERE cat.name IN ('Animation', 'Children', 'Classics', 'Comedy','Family', 'Music')
+
+	ORDER BY 3 )
+
+
+
+
+SELECT fq.name, fq.standard_quartile, COUNT(*)
+
+FROM film_quartile fq
+
+GROUP BY 1,2
+
+ORDER BY 1,2
+
+
+
+
+
+
+
+Question 4:
+
+
+
+
+
+
+
+
+
+/*Query 4/*
+
+
+
+
+SELECT rental_year, rental_month, store_id, 	COUNT(rental_month)
+
+FROM (
+
+  	SELECT DATE_PART('year',rental_date) AS rental_year,
+
+			 DATE_PART('month',rental_date) AS rental_month, store.store_id 
+
+	FROM rental
+
+	JOIN staff
+
+	ON rental.staff_id = staff.staff_id
+
+	JOIN store
+
+	ON staff.store_id = store.store_id
+
+	) rent_date
+
+GROUP BY 1,2,3
+
+ORDER BY 4 DESC
